@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 306878989}
   - component: {fileID: 306878990}
+  - component: {fileID: 306878991}
   m_Layer: 0
   m_Name: GameBoard
   m_TagString: Untagged
@@ -167,6 +168,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoardManager
   _width: 20
   _height: 20
+--- !u!114 &306878991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 306878988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a71bc2cecc69d754c854132d4de67182, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FoodSpawner
+  _boardManager: {fileID: 306878990}
+  _snakeController: {fileID: 1487506576}
+  _foodPrefab: {fileID: 4921968081004848447, guid: 061c08ac921dddd47bf8d2989ec0030a, type: 3}
 --- !u!1 &519420028
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,6 +606,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SnakeController
   _boardManager: {fileID: 306878990}
   _headPrefab: {fileID: 1547621845145907424, guid: 572f72366156c0a43a765d19c9847061, type: 3}
+  _bodyPrefab: {fileID: 464292333843042001, guid: 6d5fd663a2cb0ac4ba9bd7df20f98ede, type: 3}
+  _foodSpawner: {fileID: 306878991}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

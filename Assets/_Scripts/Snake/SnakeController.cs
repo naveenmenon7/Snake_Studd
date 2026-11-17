@@ -1,34 +1,63 @@
-
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class SnakeController : MonoBehaviour
 {
     [SerializeField] private BoardManager _boardManager;
+    [SerializeField] private FoodSpawner _foodSpawner;
     [SerializeField] private GameObject _headPrefab;
+    [SerializeField] private GameObject _bodyPrefab;
+
+    private List<Vector2Int> _snakePositions = new List<Vector2Int>();
+    private List<GameObject> _bodySegments = new List<GameObject>();
 
     private GameObject _headObject;
 
-    private Vector2Int _position;
     private Vector2Int _direction = Vector2Int.right;
 
     private float _moveInterval = 0.15f;
     private float _moveTimer;
 
+    private bool _isGameOver;
+
     private void Start()
     {
-        _position = new Vector2Int(10, 10);
+        Vector2Int startingPosition = new Vector2Int(10, 10);
+
+        _snakePositions.Add(startingPosition);
 
         _headObject = Instantiate(
             _headPrefab,
-            _boardManager.GetWorldPosition(_position),
+            _boardManager.GetWorldPosition(startingPosition),
             Quaternion.identity,
             transform
         );
+
+        for (int i = 1; i <= 2; i++)
+        {
+            Vector2Int bodyPosition = startingPosition - Vector2Int.right * i;
+
+            _snakePositions.Add(bodyPosition);
+
+            GameObject bodySegment = Instantiate(
+                _bodyPrefab,
+                _boardManager.GetWorldPosition(bodyPosition),
+                Quaternion.identity,
+                transform
+            );
+
+            _bodySegments.Add(bodySegment);
+        }
     }
 
     private void Update()
     {
+        if (_isGameOver)
+        {
+            return;
+        }
+
         HandleInput();
 
         _moveTimer += Time.deltaTime;
@@ -73,10 +102,69 @@ public class SnakeController : MonoBehaviour
 
     private void Move()
     {
-        _position += _direction;
+        Vector2Int newHeadPosition = _snakePositions[0] + _direction;
 
-        Vector3 worldPosition = _boardManager.GetWorldPosition(_position);
+        if (!_boardManager.IsInsideBoard(newHeadPosition))
+        {
+            _isGameOver = true;
+            Debug.Log("Game Over - Wall Collision");
+            return;
+        }
 
-        _headObject.transform.position = worldPosition;
+        if (_snakePositions.Contains(newHeadPosition))
+        {
+            _isGameOver = true;
+            Debug.Log("Game Over - Self Collision");
+            return;
+        }
+
+        bool collectedFood = newHeadPosition == _foodSpawner.CurrentFoodPosition;
+
+        _snakePositions.Insert(0, newHeadPosition);
+
+        if (collectedFood)
+        {
+            Grow();
+            _foodSpawner.SpawnFood();
+        }
+        else
+        {
+            _snakePositions.RemoveAt(_snakePositions.Count - 1);
+        }
+
+        _headObject.transform.position =
+            _boardManager.GetWorldPosition(newHeadPosition);
+
+        UpdateBodyVisuals();
+    }
+
+    private void Grow()
+    {
+        Vector2Int tailPosition = _snakePositions[_snakePositions.Count - 1];
+
+        GameObject bodySegment = Instantiate(
+            _bodyPrefab,
+            _boardManager.GetWorldPosition(tailPosition),
+            Quaternion.identity,
+            transform
+        );
+
+        _bodySegments.Add(bodySegment);
+    }
+
+    private void UpdateBodyVisuals()
+    {
+        for (int i = 0; i < _bodySegments.Count; i++)
+        {
+            Vector2Int bodyPosition = _snakePositions[i + 1];
+
+            _bodySegments[i].transform.position =
+                _boardManager.GetWorldPosition(bodyPosition);
+        }
+    }
+
+    public bool IsPositionOccupied(Vector2Int position)
+    {
+        return _snakePositions.Contains(position);
     }
 }
