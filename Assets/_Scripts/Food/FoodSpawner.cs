@@ -35,8 +35,15 @@ public class FoodSpawner : MonoBehaviour
             }
         }
 
+        if (_currentFood != null)
+        {
+            Destroy(_currentFood);
+            _currentFood = null;
+        }
+
         if (availablePositions.Count == 0)
         {
+            _isCurrentFoodBonus = false;
             OnBoardFilled?.Invoke();
             return;
         }
@@ -49,11 +56,6 @@ public class FoodSpawner : MonoBehaviour
         GameObject selectedPrefab = _isCurrentFoodBonus
             ? _bonusFoodPrefab
             : _foodPrefab;
-
-        if (_currentFood != null)
-        {
-            Destroy(_currentFood);
-        }
 
         _currentFood = Instantiate(
             selectedPrefab,
@@ -68,8 +70,14 @@ public class FoodSpawner : MonoBehaviour
         }
     }
 
-    public void HandleBonusFoodExpired()
+    public void HandleBonusFoodExpired(GameObject expiredFood)
     {
+        if (_currentFood != expiredFood)
+        {
+            return;
+        }
+
+        _currentFood = null;
         SpawnFood();
     }
 }
