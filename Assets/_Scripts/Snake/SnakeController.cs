@@ -7,6 +7,7 @@ public class SnakeController : MonoBehaviour
     [SerializeField] private BoardManager _boardManager;
     [SerializeField] private FoodSpawner _foodSpawner;
     [SerializeField] private GameManager _gameManager;
+    [SerializeField] private AudioManager _audioManager;
     [SerializeField] private GameObject _headPrefab;
     [SerializeField] private GameObject _bodyPrefab;
 
@@ -147,6 +148,8 @@ public class SnakeController : MonoBehaviour
             Grow(growthAmount);
 
             _gameManager.AddScore(scoreAmount);
+
+            _audioManager.PlayFoodCollect(collectedBonus);
 
             _foodSpawner.SpawnFood();
         }
