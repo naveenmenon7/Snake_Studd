@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class GameManager : MonoBehaviour
 {
@@ -35,6 +36,24 @@ public class GameManager : MonoBehaviour
     private void OnDisable()
     {
         _foodSpawner.OnBoardFilled -= HandleBoardFilled;
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current == null ||
+            !Keyboard.current.escapeKey.wasPressedThisFrame)
+        {
+            return;
+        }
+
+        if (CurrentState == GameState.Playing)
+        {
+            PauseGame();
+        }
+        else if (CurrentState == GameState.Paused)
+        {
+            ResumeGame();
+        }
     }
 
     private void HandleBoardFilled()
@@ -107,7 +126,6 @@ public class GameManager : MonoBehaviour
         }
 
         CurrentState = GameState.Won;
-        
         OnGameWon?.Invoke(_score);
     }
 
@@ -115,5 +133,14 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+    }
+
+    public void QuitGame()
+    {
+        Application.Quit();
+
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#endif
     }
 }
