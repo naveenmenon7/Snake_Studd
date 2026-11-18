@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,16 +7,16 @@ public class FoodSpawner : MonoBehaviour
     [SerializeField] private BoardManager _boardManager;
     [SerializeField] private SnakeController _snakeController;
     [SerializeField] private GameObject _foodPrefab;
+    [SerializeField] private GameObject _bonusFoodPrefab;
 
     private GameObject _currentFood;
     private Vector2Int _currentFoodPosition;
+    private bool _isCurrentFoodBonus;
 
     public Vector2Int CurrentFoodPosition => _currentFoodPosition;
+    public bool IsCurrentFoodBonus => _isCurrentFoodBonus;
 
-    private void Start()
-    {
-        SpawnFood();
-    }
+    public event Action OnBoardFilled;
 
     public void SpawnFood()
     {
@@ -36,16 +37,18 @@ public class FoodSpawner : MonoBehaviour
 
         if (availablePositions.Count == 0)
         {
-            Debug.LogWarning("No available positions left for food.");
+            OnBoardFilled?.Invoke();
             return;
         }
 
-        int randomIndex = Random.Range(0, availablePositions.Count);
-        Vector2Int randomPosition = availablePositions[randomIndex];
+        int randomIndex = UnityEngine.Random.Range(0, availablePositions.Count);
+        _currentFoodPosition = availablePositions[randomIndex];
 
-        _currentFoodPosition = randomPosition;
+        _isCurrentFoodBonus = UnityEngine.Random.value < 0.2f;
 
-        Vector3 worldPosition = _boardManager.GetWorldPosition(randomPosition);
+        GameObject selectedPrefab = _isCurrentFoodBonus
+            ? _bonusFoodPrefab
+            : _foodPrefab;
 
         if (_currentFood != null)
         {
@@ -53,10 +56,20 @@ public class FoodSpawner : MonoBehaviour
         }
 
         _currentFood = Instantiate(
-            _foodPrefab,
-            worldPosition,
+            selectedPrefab,
+            _boardManager.GetWorldPosition(_currentFoodPosition),
             Quaternion.identity,
             transform
         );
+
+        if (_isCurrentFoodBonus)
+        {
+            _currentFood.GetComponent<BonusFood>().Initialize(this);
+        }
+    }
+
+    public void HandleBonusFoodExpired()
+    {
+        SpawnFood();
     }
 }
